@@ -1,68 +1,65 @@
-import "express-async-errors";
-import * as dotenv from "dotenv";
+import 'express-async-errors';
+
+import morgan from 'morgan';
+import express from 'express';
+
+import connectDB from './db/connect.js';
+import notFoundMiddleware from './middleware/not-found.js';
+import errorHandlerMiddleware from './middleware/error-handler.js';
+import authenticateUser from './middleware/auth.js';
+import authRouter from './routes/authRoutes.js';
+import jobsRouter from './routes/jobsRoutes.js';
+
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+import helmet from 'helmet';
+import xss from 'xss-clean';
+import mongoSanitize from 'express-mongo-sanitize';
+import cookieParser from 'cookie-parser';
+
+import dotenv from 'dotenv';
 dotenv.config();
-import express from "express";
-import morgan from "morgan";
+
 const app = express();
-//routes
-import jobRouter from "./routes/jobRouter.js";
-import authRouter from "./routes/authRouter.js";
-import userRouter from "./routes/userRouter.js";
-// public folder
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import path from "path";
-import cloudinary from "cloudinary";
-import helmet from "helmet";
-import mongoSanitize from "express-mongo-sanitize";
+app.use(helmet());
+app.use(xss());
+app.use(mongoSanitize());
+app.use(cookieParser());
 
-//middleware
-import errorHandlerMiddleware from "./middleware/errorhandlerMiddleware.js";
-
-import mongoose from "mongoose";
-import { authenticateUser } from "./middleware/authMiddelware.js";
-import cookieParser from "cookie-parser";
-
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUD_API_KEY,
-  api_secret: process.env.CLOUD_API_SECRET,
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('dev'));
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
-}
-
-app.use(express.static(path.resolve(__dirname, "./client/dist")));
-app.use(cookieParser());
 app.use(express.json());
-app.use(helmet());
-app.use(mongoSanitize());
+app.use(express.static(path.resolve(__dirname, './client/build')));
 
-app.use("/api/v1/jobs", authenticateUser, jobRouter);
-app.use("/api/v1/users", authenticateUser, userRouter);
-app.use("/api/v1/auth", authRouter);
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/jobs', authenticateUser, jobsRouter);
 
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "/client/dist", "index.html"));
+app.get('*', function (request, response) {
+  response.sendFile(path.resolve(__dirname, './client/build', 'index.html'));
 });
 
-app.use("*", (req, res) => {
-  res.status(404).json({ msg: "not found" });
-});
-
+app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
-const port = process.env.PORT || 5100;
+const port = process.env.PORT || 5000;
 
-try {
-  await mongoose.connect(process.env.MONGO_URL);
-  app.listen(port, () => {
-    console.log(`listening on port ${port}...`);
-  });
-} catch (error) {
-  console.log(error);
-  process.exit(1);
-}
+const start = async () => {
+  try {
+    await connectDB(process.env.MONGO_URI).then(() =>
+      console.log('connected db')
+    );
+    app.listen(port, () =>
+      console.log(`Server is listening on port ${port}...`)
+    );
+  } catch (error) {
+    console.log(`Error: ${error}`);
+  }
+};
+
+start();

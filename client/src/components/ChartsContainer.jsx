@@ -1,20 +1,23 @@
-import { useState } from "react";
+import { useState } from 'react';
+import BarChartComponent from './BarChartComponent';
+import AreaChartComponent from './AreaChartComponent';
+import Wrapper from '../assets/wrappers/ChartsContainer';
+import { useAppContext } from '../context/appContext';
 
-import BarChart from "./BarChart";
-import AreaChart from "./AreaChart";
-import Wrapper from "../assets/wrappers/ChartsContainer";
-
-const ChartsContainer = ({ data }) => {
+const ChartsContainer = () => {
   const [barChart, setBarChart] = useState(true);
-
+  const { monthlyApplications: data } = useAppContext();
   return (
     <Wrapper>
       <h4>Monthly Applications</h4>
-      <button type="button" onClick={() => setBarChart(!barChart)}>
-        {barChart ? "Area Chart" : "Bar Chart"}
+      <button type='button' onClick={() => setBarChart(!barChart)}>
+        {barChart ? 'AreaChart' : 'BarChart'}
       </button>
-
-      {barChart ? <BarChart data={data} /> : <AreaChart data={data} />}
+      {barChart ? (
+        <BarChartComponent data={data} />
+      ) : (
+        <AreaChartComponent data={data} />
+      )}
     </Wrapper>
   );
 };

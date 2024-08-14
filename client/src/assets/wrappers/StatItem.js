@@ -1,11 +1,10 @@
-import styled from 'styled-components';
+import styled from 'styled-components'
 
 const Wrapper = styled.article`
   padding: 2rem;
-  background: var(--background-secondary-color);
+  background: var(--white);
+  border-radius: var(--borderRadius);
   border-bottom: 5px solid ${(props) => props.color};
-  border-radius: var(--border-radius);
-
   header {
     display: flex;
     align-items: center;
@@ -16,21 +15,19 @@ const Wrapper = styled.article`
     font-weight: 700;
     font-size: 50px;
     color: ${(props) => props.color};
-    line-height: 2;
   }
   .title {
     margin: 0;
     text-transform: capitalize;
-    letter-spacing: var(--letter-spacing);
+    letter-spacing: var(--letterSpacing);
     text-align: left;
     margin-top: 0.5rem;
-    font-size: 1.25rem;
   }
   .icon {
     width: 70px;
     height: 60px;
     background: ${(props) => props.bcg};
-    border-radius: var(--border-radius);
+    border-radius: var(--borderRadius);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -39,6 +36,6 @@ const Wrapper = styled.article`
       color: ${(props) => props.color};
     }
   }
-`;
+`
 
-export default Wrapper;
+export default Wrapper

@@ -1,6 +1,6 @@
-import styled from 'styled-components';
+import styled from 'styled-components'
 
-const Wrapper = styled.section`
+const Wrapper = styled.main`
   nav {
     width: var(--fluid-width);
     max-width: var(--max-width);
@@ -20,31 +20,21 @@ const Wrapper = styled.section`
     span {
       color: var(--primary-500);
     }
-    margin-bottom: 1.5rem;
   }
   p {
-    line-height: 2;
-    color: var(--text-secondary-color);
-    margin-bottom: 1.5rem;
-    max-width: 35em;
-  }
-  .register-link {
-    margin-right: 1rem;
+    color: var(--grey-600);
   }
   .main-img {
     display: none;
   }
-  .btn {
-    padding: 0.75rem 1rem;
-  }
   @media (min-width: 992px) {
     .page {
-      grid-template-columns: 1fr 400px;
+      grid-template-columns: 1fr 1fr;
       column-gap: 3rem;
     }
     .main-img {
       display: block;
     }
   }
-`;
-export default Wrapper;
+`
+export default Wrapper

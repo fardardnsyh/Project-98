@@ -1,35 +1,37 @@
-import { FaSuitcaseRolling, FaCalendarCheck, FaBug } from "react-icons/fa";
-import Wrapper from "../assets/wrappers/StatsContainer";
-import StatItem from "./StatItem";
+import StatItem from './StatItem';
+import { useAppContext } from '../context/appContext';
+import { FaSuitcaseRolling, FaCalendarCheck, FaBug } from 'react-icons/fa';
+import Wrapper from '../assets/wrappers/StatsContainer';
 
-const StatsContainer = ({ defaultStats }) => {
-  const stats = [
+const StatsContainer = () => {
+  const { stats } = useAppContext();
+  const defaultStats = [
     {
-      title: "pending applications",
-      count: defaultStats?.pending,
+      title: 'pending applications',
+      count: stats.pending || 0,
       icon: <FaSuitcaseRolling />,
-      color: "#f59e0b",
-      bcg: "#fef3c7",
+      color: '#e9b949',
+      bcg: '#fcefc7',
     },
     {
-      title: "interview scheduled",
-      count: defaultStats?.interview,
+      title: 'interviews scheduled',
+      count: stats.interview || 0,
       icon: <FaCalendarCheck />,
-      color: "#647acb",
-      bcg: "#e0e8f9",
+      color: '#647acb',
+      bcg: '#e0e8f9',
     },
     {
-      title: "jobs declined",
-      count: defaultStats?.declined,
+      title: 'jobs declined',
+      count: stats.declined || 0,
       icon: <FaBug />,
-      color: "#d66a6a",
-      bcg: "#ffeeee",
+      color: '#d66a6a',
+      bcg: '#ffeeee',
     },
   ];
   return (
     <Wrapper>
-      {stats.map((item) => {
-        return <StatItem key={item.title} {...item} />;
+      {defaultStats.map((item, index) => {
+        return <StatItem key={index} {...item} />;
       })}
     </Wrapper>
   );

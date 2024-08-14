@@ -1,68 +1,87 @@
-import { FormRow, FormRowSelector, SubmitBtn } from ".";
-import Wrapper from "../assets/wrappers/DashboardFormPage";
-import { Form, useSubmit, Link } from "react-router-dom";
-import { JOB_TYPE, JOB_STATUS, JOB_SORT_BY } from "../../../utils/constants";
-import { useAllJobsContext } from "../pages/AllJobs";
+import { FormRow, FormRowSelect } from '.';
+import { useAppContext } from '../context/appContext';
+import Wrapper from '../assets/wrappers/SearchContainer';
+import { useState, useMemo } from 'react';
 
 const SearchContainer = () => {
-  const submit = useSubmit();
-  const { searchValues } = useAllJobsContext();
-  const { search, jobStatus, jobType, sort } = searchValues;
+  const {
+    isLoading,
+    handleChange,
+    searchStatus,
+    statusOptions,
+    jobTypeOptions,
+    searchType,
+    clearFilters,
+    sort,
+    sortOptions,
+  } = useAppContext();
 
-  const debounce = (onChange) => {
-    let timeout;
-    return (e) => {
-      const form = e.currentTarget.form;
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        onChange(form);
-      }, 2000);
+  const [localSearch, setLocalSearch] = useState('');
+
+  const handleSearch = (e) => {
+    if (isLoading) return;
+    handleChange({ name: e.target.name, value: e.target.value });
+  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setLocalSearch('');
+    clearFilters();
+  };
+
+  const debounce = () => {
+    let timeoutID;
+    return ({ target }) => {
+      setLocalSearch(target.value);
+      clearTimeout(timeoutID);
+      timeoutID = setTimeout(() => {
+        handleChange({ name: target.name, value: target.value });
+      }, 1000);
     };
   };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const optimizedDebounce = useMemo(() => debounce(), []);
+
   return (
     <Wrapper>
-      <Form className="form">
-        <h5 className="form-title">search form</h5>
-        <div className="form-center">
+      <form className='form'>
+        <h4>search form</h4>
+        <div className='form-center'>
           <FormRow
-            type="search"
-            name="search"
-            defaultValue={search}
-            onChange={debounce((form) => {
-              submit(form);
-            })}
-          />
-          <FormRowSelector
-            labelText="job status"
-            name="jobStatus"
-            list={["all", ...Object.values(JOB_STATUS)]}
-            defaultValue={jobStatus}
-            onChange={(e) => {
-              submit(e.currentTarget.form);
-            }}
-          />
-          <FormRowSelector
-            labelText="job type"
-            name="jobType"
-            list={["all", ...Object.values(JOB_TYPE)]}
-            defaultValue={jobType}
-            onChange={(e) => {
-              submit(e.currentTarget.form);
-            }}
-          />
-          <FormRowSelector
-            name="sort"
-            list={[...Object.values(JOB_SORT_BY)]}
-            defaultValue={sort}
-            onChange={(e) => {
-              submit(e.currentTarget.form);
-            }}
-          />
-          <Link to="/dashboard/all-jobs" className="btn form-btn delete-btn">
-            Reset Search Values
-          </Link>
+            type='text'
+            name='search'
+            value={localSearch}
+            handleChange={optimizedDebounce}
+          ></FormRow>
+          <FormRowSelect
+            labelText='job status'
+            name='searchStatus'
+            value={searchStatus}
+            handleChange={handleSearch}
+            list={['all', ...statusOptions]}
+          ></FormRowSelect>
+          <FormRowSelect
+            labelText='job type'
+            name='searchType'
+            value={searchType}
+            handleChange={handleSearch}
+            list={['all', ...jobTypeOptions]}
+          ></FormRowSelect>
+          <FormRowSelect
+            name='sort'
+            value={sort}
+            handleChange={handleSearch}
+            list={sortOptions}
+          ></FormRowSelect>
+          <button
+            className='btn btn-block btn-danger'
+            disabled={isLoading}
+            onClick={handleSubmit}
+          >
+            clear filters
+          </button>
         </div>
-      </Form>
+      </form>
     </Wrapper>
   );
 };

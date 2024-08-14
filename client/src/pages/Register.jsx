@@ -1,50 +1,120 @@
-import { Form, redirect, useNavigation, Link } from "react-router-dom";
-import Wrapper from "../assets/wrappers/RegisterAndLoginPage";
-import { FormRow, Logo } from "../components";
-import customFetch from "../utils/customFetch";
-import { toast } from "react-toastify";
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Wrapper from '../assets/wrappers/RegisterPage';
+import { Logo, FormRow, Alert } from '../components';
+import { useAppContext } from '../context/appContext';
 
-export const action = async ({ request }) => {
-  const formData = await request.formData();
-  const data = Object.fromEntries(formData);
-
-  try {
-    await customFetch.post("/auth/register", data);
-    toast.success("registeration successfully");
-    return redirect("/login");
-  } catch (error) {
-    toast.error(error?.response?.data?.msg);
-    return error;
-  }
+const initialState = {
+  name: '',
+  email: '',
+  password: '',
+  isMember: true,
 };
 
 const Register = () => {
-  const navigation = useNavigation();
-  const isSubmitting = navigation.state === "submitting";
+  const [values, setValues] = useState(initialState);
+  const navigate = useNavigate();
+  const { user, isLoading, showAlert, displayAlert, setupUser } =
+    useAppContext();
+
+  const toggleMember = () => {
+    setValues({ ...values, isMember: !values.isMember });
+  };
+
+  const handleChange = ({ target }) => {
+    const { name, value } = target;
+    setValues({ ...values, [name]: value });
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const { name, email, password, isMember } = values;
+    if (!email || !password || (!isMember && !name)) {
+      displayAlert();
+      return;
+    }
+
+    const currentUser = { name, email, password };
+
+    if (isMember) {
+      setupUser({
+        currentUser,
+        endPoint: 'login',
+        alertText: 'Login Successful! Redirecting...',
+      });
+    } else {
+      setupUser({
+        currentUser,
+        endPoint: 'register',
+        alertText: 'User Created! Redirecting...',
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      setTimeout(() => {
+        navigate('/stats');
+      }, 3000);
+    }
+  }, [user, navigate]);
+
   return (
-    <Wrapper>
-      <Form method="post" className="form">
+    <Wrapper className='full-page'>
+      <form className='form' onSubmit={handleSubmit}>
         <Logo />
-        <FormRow type="text" name="name" />
+        <h3>{values.isMember ? 'Login' : 'Register'}</h3>
+        {showAlert && <Alert />}
+        {!values.isMember && (
+          <FormRow
+            labelText='name'
+            name='name'
+            type='text'
+            value={values.name}
+            handleChange={handleChange}
+          />
+        )}
         <FormRow
-          type="text"
-          name="lastName"
-          labelText="last name"
-          defaultValue=""
+          labelText='email'
+          name='email'
+          type='email'
+          value={values.email}
+          handleChange={handleChange}
         />
-        <FormRow type="text" name="location" />
-        <FormRow type="email" name="email" />
-        <FormRow type="password" name="password" />
-        <button type="submit" className="btn btn-block" disabled={isSubmitting}>
-          {isSubmitting ? "submitting..." : "submit"}
+        <FormRow
+          labelText='password'
+          name='password'
+          type='password'
+          value={values.password}
+          handleChange={handleChange}
+        />
+        <button type='submit' className='btn btn-block' disabled={isLoading}>
+          Submit
+        </button>
+        <button
+          type='button'
+          className='btn btn-block btn-hipster'
+          disabled={isLoading}
+          onClick={() => {
+            setupUser({
+              currentUser: {
+                email: 'testUser@test.com',
+                password: '123456789',
+              },
+              endPoint: 'login',
+              alertText: 'Login Successful! Redirecting...',
+            });
+          }}
+        >
+          {isLoading ? 'loading...' : 'demo app'}
         </button>
         <p>
-          Already a member ?
-          <Link to="/login" className="member-btn">
-            Login
-          </Link>
+          {values.isMember ? 'Not a member yet?' : 'Already a member?'}
+          <button type='button' onClick={toggleMember} className='member-btn'>
+            {values.isMember ? 'Register' : 'Login'}
+          </button>
         </p>
-      </Form>
+      </form>
     </Wrapper>
   );
 };
